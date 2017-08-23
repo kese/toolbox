@@ -1,0 +1,9 @@
+{
+  "name": "toolbox",
+  "version": "0.0.0",
+  "description": "Collection of tools and helpers",
+  "repository": "https://github.com/kese/toolbox",
+  "homepage": "https://github.com/kese/toolbox#readme",
+  "author": "Sebastian Kehr",
+  "license": "MIT"
+}

@@ -21,7 +21,6 @@ async function complete (ctx, failed, error, value, opts) {
 
 async function terminate (ctx, trax, root, opts) {
   if (trax.status === 'failed') {
-    console.log('TERM', trax)
     await ctx.set('/', { ...root, trax })
   } else await ctx.commit('reset', opts.finalMessage)
 }

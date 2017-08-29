@@ -63,13 +63,8 @@ const actions = {
     disposals = []
     index.set(key, buffer.length) // may actually trigger new disposals
     if (!index.has(key)) return
-    try {
-      await fs.writeFile(pathForKey(key), buffer)
-    } catch (err) {
-      index.del(key)
-      return
-    }
     await (pendingIndex = writeIndex(index))
+    await fs.writeFile(pathForKey(key), buffer)
     debug('WRITE', { key, buffer })
   }
 }

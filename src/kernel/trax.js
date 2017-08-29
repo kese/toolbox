@@ -61,7 +61,6 @@ async function run (ctx, opts) {
   } catch (err) {
     error = err
     setTimeout(() => ctx.commit('abort', opts.errorMessage))
-    console.trace()
     throw error
   }
 }

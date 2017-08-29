@@ -1,18 +1,16 @@
 import p from 'path'
 import R from 'ramda'
-import du from 'diskusage'
 import fs from 'fs-extra'
 import createDebug from 'debug'
 import { remote } from 'electron'
 import createIndex from 'lru-cache'
-import { cps } from '../../promise'
 import { sha } from '../../util'
 
 const debug = createDebug('app:kernel:storage:persistent')
 const cacheDir = p.join(remote.app.getPath('userData'), remote.app.getName())
 const pathForKey = key => p.join(cacheDir, sha(key, 64))
 const indexFile = p.join(cacheDir, 'index')
-const checkDisk = du.check.bind(du)
+const maxSize = Math.pow(2, 33)
 
 let disposals = []
 let pendingIndex = setupIndex()
@@ -23,11 +21,6 @@ function dispose (key) {
   debug('DISPOSE', { key, path })
 }
 
-async function getMaxSize (size) {
-  const { available, free, total } = await cps(checkDisk, cacheDir)
-  return Math.min(0.75 * total * (available + size) / free, Math.pow(2, 33))
-}
-
 async function readIndex () {
   const exists = await fs.pathExists(indexFile)
   return exists ? fs.readJSON(indexFile) : { entries: [], size: 0 }
@@ -35,11 +28,10 @@ async function readIndex () {
 
 async function setupIndex () {
   await fs.ensureDir(cacheDir)
-  const { entries, size } = await readIndex()
-  const max = await getMaxSize(size)
-  const index = createIndex({ max, length: R.identity, dispose })
+  const { entries } = await readIndex()
+  const index = createIndex({ max: maxSize, length: R.identity, dispose })
   index.load(entries)
-  debug('SETUP', { max: `${max / Math.pow(2, 30)} GBytes`, entries })
+  debug('SETUP', { max: `${maxSize / Math.pow(2, 30)} GBytes`, entries })
   return index
 }
 
@@ -71,8 +63,13 @@ const actions = {
     disposals = []
     index.set(key, buffer.length) // may actually trigger new disposals
     if (!index.has(key)) return
-    pendingIndex = writeIndex(index)
-    await Promise.all([pendingIndex, fs.writeFile(pathForKey(key), buffer)])
+    try {
+      await fs.writeFile(pathForKey(key), buffer)
+    } catch (err) {
+      index.del(key)
+      return
+    }
+    await (pendingIndex = writeIndex(index))
     debug('WRITE', { key, buffer })
   }
 }

@@ -19,6 +19,7 @@ const toTypedArray = Type => ({ buffer, byteOffset: off, byteLength: len }) =>
 
 export const toFloat32Array = toTypedArray(Float32Array)
 export const toUint32Array = toTypedArray(Uint32Array)
+export const toUint16Array = toTypedArray(Uint16Array)
 export const toUint8Array = toTypedArray(Uint8Array)
 export const toUint8ClampedArray = toTypedArray(Uint8ClampedArray)
 

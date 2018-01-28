@@ -1,5 +1,6 @@
-import R from 'ramda'
 import * as d3 from './d3'
+
+const { round } = Math
 
 const spectralStops = [
   '#8000FF',
@@ -10,32 +11,23 @@ const spectralStops = [
   '#FF8000',
   '#FF0000',
   '#800000'
-]
+].map(d3.color)
 
-const toRGBABytes = R.pipe(d3.color, function ({ r, g, b, opacity }) {
-  return Uint8Array.of(r, g, b, opacity * 255)
-})
-
-function createPalette (colorCount, colorStops) {
-  const ratio = (colorCount - 1) / (colorStops.length - 1)
-  const domain = d3.range(colorStops.length).map(R.multiply(ratio))
-  const getColor = d3.scaleLinear().domain(domain).range(colorStops)
-  return d3.range(colorCount).map(getColor)
+function d3ToUintRGBA ({ r, g, b, opacity }) {
+  const bytes = [round(r), round(g), round(b), round(opacity * 255)]
+  return (new Uint32Array(Uint8Array.of(...bytes).buffer))[0]
 }
 
-function createSpectralPalette (colorCount) {
-  return createPalette(colorCount, spectralStops)
+function uintARGBToD3 (intVal) {
+  const opacity = ((intVal & 0xff000000) >>> 24) / 255
+  const red = (intVal & 0xff0000) >> 16
+  const green = (intVal & 0x00ff00) >> 8
+  const blue = intVal & 0x0000ff
+  return d3.rgb(red, green, blue, opacity)
 }
 
 export {
-  createPalette,
-  createSpectralPalette,
-  toRGBABytes
+  spectralStops,
+  uintARGBToD3,
+  d3ToUintRGBA
 }
-
-// export function createLogColors (count, range) {
-//   const domain = d3.range(range.length).map(R.divide(R.__, range.length - 1))
-//   const linScale = d3.scaleLinear().domain(domain).range(range)
-//   const logScale = d3.scaleLog().domain([1, count])
-//   return d3.range(count).map(R.pipe(R.inc, logScale, linScale, toRGBABytes))
-// }

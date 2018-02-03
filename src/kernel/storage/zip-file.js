@@ -1,10 +1,7 @@
 import R from 'ramda'
 import yauzl from 'yauzl'
 import { fromEvent } from 'most'
-import createDebug from 'debug'
 import { pcb } from '../../promise'
-
-const debug = createDebug('app:kernel:storage:zipFile')
 
 const openOptions = { lazyEntries: true, autoClose: false }
 
@@ -41,18 +38,14 @@ async function readPath (ctx, path) {
 const actions = {
   clear: () => {},
 
-  async read (ctx, key) {
+  read (ctx, key) {
     const path = key.split(':').pop().split('/')
-    debug('READ', path)
-    const buf = await readPath(ctx, path)
-    debug(buf ? 'HIT' : 'MISS', key)
-    return buf
+    return readPath(ctx, path)
   },
 
-  async open (ctx, fileName) {
-    debug('OPEN', fileName)
+  open (ctx, fileName) {
     let current, update
-    await ctx.invoke('/trax/join', {
+    return ctx.invoke('/trax/join', {
       errorMessage: 'openingZipFileFailed',
       async execute () {
         current = await ctx.get('.')
@@ -75,7 +68,6 @@ const actions = {
 
 const mutators = {
   addEntry (state, entry) {
-    debug('ENTRY', entry)
     const entryCount = state.entryCount + 1
     if (entry.fileName.slice(-1) === '/') return { ...state, entryCount }
     const entryPath = entry.fileName.split('/')

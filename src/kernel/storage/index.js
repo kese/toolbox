@@ -4,7 +4,7 @@ import origin from './origin'
 import persistent from './persistent'
 import zipFile from './zip-file'
 
-async function doClear (ctx, [tier, ...upper]) {
+function doClear (ctx, [tier, ...upper]) {
   if (!tier) return
   return Promise.all([
     ctx.invoke(`${tier}/clear`),
@@ -22,7 +22,7 @@ async function doRead (ctx, [tier, ...lower], key, upper = []) {
   return doRead(ctx, lower, key, [tier].concat(upper))
 }
 
-async function doWrite (ctx, [tier, ...upper], key, buffer) {
+function doWrite (ctx, [tier, ...upper], key, buffer) {
   if (!tier) return
   return Promise.all([
     ctx.invoke(`${tier}/write`, key, buffer),
@@ -38,15 +38,15 @@ async function doCall (fn, ctx, rawKey = '', ...args) {
 }
 
 const actions = {
-  async clear (...args) {
+  clear (...args) {
     return doCall(doClear, ...args)
   },
 
-  async read (...args) {
+  read (...args) {
     return doCall(doRead, ...args)
   },
 
-  async write (...args) {
+  write (...args) {
     return doCall(doWrite, ...args)
   }
 }

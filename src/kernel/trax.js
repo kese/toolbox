@@ -1,7 +1,3 @@
-import createDebug from 'debug'
-
-const debug = createDebug('app:kernel:trax')
-
 const noop = () => {}
 
 function prepareOpts (opts) {
@@ -23,10 +19,6 @@ async function terminate (ctx, trax, root, opts) {
   if (trax.status === 'failed') {
     await ctx.set('/', { ...root, trax })
   } else await ctx.commit('reset', opts.finalMessage)
-}
-
-async function boot (ctx) {
-  ctx.listen('.').skipRepeats().observe(state => debug('STATE', state))
 }
 
 async function run (ctx, opts) {
@@ -68,18 +60,15 @@ async function run (ctx, opts) {
 const actions = {
   start (ctx, args) {
     const opts = { ...prepareOpts(args), start: true }
-    debug('START', opts)
     return run(ctx, opts)
   },
 
   join (ctx, args) {
     const opts = prepareOpts(args)
-    debug('JOIN', opts)
     return run(ctx, opts)
   },
 
   wait ({ get, invoke }, count) {
-    debug('WAIT', count)
     return new Promise(resolve => {
       setTimeout(async function () {
         const pending = await get('pending')
@@ -119,4 +108,4 @@ const mutators = {
   }
 }
 
-export default { actions, boot, init: mutators.reset, mutators }
+export default { actions, init: mutators.reset, mutators }

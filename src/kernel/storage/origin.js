@@ -1,7 +1,3 @@
-import createDebug from 'debug'
-
-const debug = createDebug('app:kernel:storage:origin')
-
 const tiers = 'cache|zipFile'
 
 const actions = {
@@ -9,16 +5,12 @@ const actions = {
     return ctx.invoke('../clear', `@${tiers}`)
   },
 
-  async read (ctx, key) {
-    const buf = await ctx.invoke('../read', `${key}@${tiers}`)
-    debug('READ', { key, buf })
-    return buf
+  read (ctx, key) {
+    return ctx.invoke('../read', `${key}@${tiers}`)
   },
 
-  async write (ctx, key, buf) {
-    const result = await ctx.invoke('../write', `${key}@${tiers}`, buf)
-    debug('WRITE', { key, buf })
-    return result
+  write (ctx, key, buf) {
+    return ctx.invoke('../write', `${key}@${tiers}`, buf)
   }
 }
 

@@ -1,12 +1,10 @@
 import p from 'path'
 import R from 'ramda'
 import fs from 'fs-extra'
-import createDebug from 'debug'
 import { remote } from 'electron'
 import createIndex from 'lru-cache'
 import { sha } from '../../util'
 
-const debug = createDebug('app:kernel:storage:persistent')
 const cacheDir = p.join(remote.app.getPath('userData'), remote.app.getName())
 const pathForKey = key => p.join(cacheDir, sha(key, 64))
 const indexFile = p.join(cacheDir, 'index')
@@ -18,7 +16,6 @@ let pendingIndex = setupIndex()
 function dispose (key) {
   const path = pathForKey(key)
   disposals.push(fs.remove(path))
-  debug('DISPOSE', { key, path })
 }
 
 async function readIndex () {
@@ -31,7 +28,6 @@ async function setupIndex () {
   const { entries } = await readIndex()
   const index = createIndex({ max: maxSize, length: R.identity, dispose })
   index.load(entries)
-  debug('SETUP', { max: `${maxSize / Math.pow(2, 30)} GBytes`, entries })
   return index
 }
 
@@ -47,14 +43,12 @@ const actions = {
     const [index] = await Promise.all([pendingIndex, fs.remove(cacheDir)])
     index.reset()
     await (pendingIndex = setupIndex())
-    debug('CLEAR', cacheDir)
   },
 
   async read (ctx, key) {
     const path = pathForKey(key)
     const exists = await fs.pathExists(path).catch(() => false)
     const buffer = exists ? await fs.readFile(path) : undefined
-    debug('READ', { key, buffer })
     if (buffer) return buffer
   },
 
@@ -65,7 +59,6 @@ const actions = {
     if (!index.has(key)) return
     await (pendingIndex = writeIndex(index))
     await fs.writeFile(pathForKey(key), buffer)
-    debug('WRITE', { key, buffer })
   }
 }
 

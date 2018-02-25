@@ -32,7 +32,7 @@ function doWrite (ctx, [tier, ...upper], key, buffer) {
 
 async function doCall (fn, ctx, rawKey = '', ...args) {
   const [key, tiers] = rawKey.split('@')
-  const id = await ctx.get('id')
+  const id = await ctx.get('id') || 'shared'
   const prefixedKey = key.indexOf(id) === 0 ? key : `${id}:${key}`
   return fn(ctx, tiers.split('|'), prefixedKey, ...args)
 }

@@ -2,7 +2,7 @@ import p from 'path'
 import R from 'ramda'
 import fs from 'fs-extra'
 import { remote } from 'electron'
-import createIndex from 'lru-cache'
+import Cache from 'lru-cache'
 import { sha } from '../../util'
 
 const cacheDir = p.join(remote.app.getPath('userData'), remote.app.getName())
@@ -26,7 +26,7 @@ async function readIndex () {
 async function setupIndex () {
   await fs.ensureDir(cacheDir)
   const { entries } = await readIndex()
-  const index = createIndex({ max: maxSize, length: R.identity, dispose })
+  const index = new Cache({ max: maxSize, length: R.identity, dispose })
   index.load(entries)
   return index
 }

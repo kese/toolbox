@@ -15,8 +15,8 @@ async function letUserOpenFile (options) {
 
 async function letUserSaveFile (options) {
   try {
-    const fileName = await showSaveDialog(options)
-    return fileName
+    const { filePath } = await showSaveDialog(options)
+    return filePath
   } catch (error) {} // swallow null errors
 }
 

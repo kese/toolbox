@@ -2,21 +2,25 @@ import { remote } from 'electron'
 
 const win = remote.getCurrentWindow()
 
-const showOpenDialog = options => remote.dialog.showOpenDialog(win, options)
+const showOpenDialog = options => new Promise(resolve => {
+  return remote.dialog.showOpenDialog(win, options, resolve)
+})
 
-const showSaveDialog = options => remote.dialog.showSaveDialog(win, options)
+const showSaveDialog = options => new Promise(resolve => {
+  return remote.dialog.showSaveDialog(win, options, resolve)
+})
 
 async function letUserOpenFile (options) {
   try {
-    const { filePaths: [fileName] } = await showOpenDialog(options)
+    const [fileName] = await showOpenDialog(options)
     return fileName
   } catch (error) {} // swallow null errors
 }
 
 async function letUserSaveFile (options) {
   try {
-    const { filePath } = await showSaveDialog(options)
-    return filePath
+    const fileName = await showSaveDialog(options)
+    return fileName
   } catch (error) {} // swallow null errors
 }
 
